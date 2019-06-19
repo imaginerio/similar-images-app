@@ -2,19 +2,19 @@
   <div class="container">
     <div></div>
     <div class="photo-card" v-for="photo in photos" :key="photo._id">
-      <!-- <div class="photo-item">
-        <p>{{photo._id}}</p>
+      <div class="photo-item">
         <img class="photo" :src="`/photos/${photo._id}.jpg`" alt>
-      </div>-->
+        <p>{{photo._id}}</p>
+      </div>
       <div class="similars">
         <div
-          v-for="(similar, iSimilar) in photo.neighbors"
+          v-for="(similar, similarIndex) in photo.neighbors"
           :key="similar.filename"
           class="photo-item"
-          @click="selectSimilar(photo, iSimilar, similar.filename )"
         >
           <img
             class="photo"
+            @click="selectSimilar(photo, similarIndex, similar.filename )"
             :class="{ active: similar.isSamePhoto }"
             :src="`/photos/${similar.filename}.jpg`"
             alt
@@ -122,11 +122,21 @@ export default {
     return { photos: data }
   },
   methods: {
+    shiftFirstItem(arr) {
+      return arr.filter((item, index) => {
+        return index !== 0
+      })
+    },
     //takes the photo, index and id of the similar photo and updates the db.
-    async selectSimilar(photo, iSimilar, similarId) {
+    async selectSimilar(photo, similarIndex, similarId) {
       const updateArrayInItem = async (item, index) => {
         let arr = item.neighbors
-        arr[index].isSamePhoto = true
+
+        if (arr[index].isSamePhoto) {
+          arr[index].isSamePhoto = false
+        } else {
+          arr[index].isSamePhoto = true
+        }
 
         let payload = {
           ...item,
@@ -134,10 +144,19 @@ export default {
         }
 
         const payloadId = item._id
-        const updatedItem = await axios.post(
+        const res = await axios.post(
           `http://localhost:3000/api/${payloadId}`,
           payload
         )
+        const updatedItem = res.data
+
+        //update data.photos if item exists
+        const itemIndex = _.findIndex(this.photos, { _id: updatedItem._id })
+
+        if (itemIndex !== -1) {
+          this.photos.splice(itemIndex, 1, updatedItem)
+        }
+
         return updatedItem
       }
 
@@ -148,8 +167,13 @@ export default {
         filename: photo._id
       })
 
-      updateArrayInItem(photo, iSimilar)
+      updateArrayInItem(photo, similarIndex)
       updateArrayInItem(similarPhoto, indexPhoto)
+
+      //  TODO:
+      //  Considerar marcar itens como 'founded' pq assim eles podem desaparecer da db.
+      //  considerar tbm não mostrar itens que tem algum item identico dentro dos neighbors, pq eles tbm podem desaparecer da busca
+      //  só é preciso marcar as relações de semelhança uma vez, depois disso eu posso apagar os itens repetidos.
 
       console.log('procurando da foto:')
       console.log(similarPhoto)
