@@ -1,10 +1,15 @@
 <template>
   <div class="container">
-    <div></div>
-    <div class="photo-card" v-for="photo in photos" :key="photo._id">
+    <div>
+      <!-- <pre>
+        {{images}}
+      </pre>-->
+    </div>
+    <div class="photo-card" v-for="photo in images" :key="photo._id">
       <div class="photo-item">
         <img class="photo" :src="`/photos/${photo._id}.jpg`" alt>
-        <p>{{photo._id}}</p>
+        <p>id: {{photo._id}}</p>
+        <p>{{photo.found}}</p>
       </div>
       <div class="similars">
         <div
@@ -19,7 +24,7 @@
             :src="`/photos/${similar.filename}.jpg`"
             alt
           >
-          <p>ID: {{similar.filename}} Similarity: {{similar.similarity * 100}}%</p>
+          <p>{{similar.filename}} Similarity: {{similar.similarity * 100}}%</p>
         </div>
       </div>
     </div>
@@ -37,7 +42,7 @@ export default {
   },
   data() {
     return {
-      _photos: [
+      _images: [
         {
           _id: '001AAN005147',
           fileName: '001AAN005147.json',
@@ -119,17 +124,34 @@ export default {
     const { data } = await axios.get(
       `http://localhost:3000/api/?similarity=${similarity}`
     )
-    return { photos: data }
+    return { images: data }
   },
   methods: {
-    shiftFirstItem(arr) {
-      return arr.filter((item, index) => {
-        return index !== 0
-      })
+    async updateImageState(imageToUpdate) {
+      const id = imageToUpdate._id
+
+      // try to find item index
+      const imageIndex = _.findIndex(this.images, { _id: id })
+      // if index, it updates in data
+      if (imageIndex !== -1) {
+        this.images.splice(imageIndex, 1, imageToUpdate)
+      }
+
+      const res = await axios.post(
+        `http://localhost:3000/api/${id}`,
+        imageToUpdate
+      )
+
+      const similarity = 0.89
+      const { data } = await axios.get(
+        `http://localhost:3000/api/?similarity=${similarity}?found=false`
+      )
+
+      this.images = data
     },
     //takes the photo, index and id of the similar photo and updates the db.
     async selectSimilar(photo, similarIndex, similarId) {
-      const updateArrayInItem = async (item, index) => {
+      const markImageAsSame = async (item, index) => {
         let arr = item.neighbors
 
         if (arr[index].isSamePhoto) {
@@ -143,21 +165,17 @@ export default {
           arr
         }
 
-        const payloadId = item._id
-        const res = await axios.post(
-          `http://localhost:3000/api/${payloadId}`,
-          payload
-        )
-        const updatedItem = res.data
+        this.updateImageState(payload)
+      }
 
-        //update data.photos if item exists
-        const itemIndex = _.findIndex(this.photos, { _id: updatedItem._id })
-
-        if (itemIndex !== -1) {
-          this.photos.splice(itemIndex, 1, updatedItem)
+      const markImageAsfound = image => {
+        if (image.found) {
+          image.found = false
+        } else {
+          image.found = true
         }
 
-        return updatedItem
+        this.updateImageState(image)
       }
 
       const res = await axios.get(`http://localhost:3000/api/${similarId}`)
@@ -167,17 +185,21 @@ export default {
         filename: photo._id
       })
 
-      updateArrayInItem(photo, similarIndex)
-      updateArrayInItem(similarPhoto, indexPhoto)
+      // It updates the photo and find the similar item to update it too.
+      markImageAsSame(photo, similarIndex)
+      markImageAsSame(similarPhoto, indexPhoto)
+      markImageAsfound(similarPhoto)
+
+      // Marc the similar item as found.
 
       //  TODO:
       //  Considerar marcar itens como 'founded' pq assim eles podem desaparecer da db.
       //  considerar tbm não mostrar itens que tem algum item identico dentro dos neighbors, pq eles tbm podem desaparecer da busca
       //  só é preciso marcar as relações de semelhança uma vez, depois disso eu posso apagar os itens repetidos.
 
-      console.log('procurando da foto:')
-      console.log(similarPhoto)
-      console.log('o index da foto mãe:', photo._id, 'que é:', indexPhoto)
+      // console.log('procurando da foto:')
+      // console.log(similarPhoto)
+      // console.log('o index da foto mãe:', photo._id, 'que é:', indexPhoto)
     }
   }
 }
