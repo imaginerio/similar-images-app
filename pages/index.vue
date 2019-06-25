@@ -1,23 +1,25 @@
 <template>
   <div class="container">
-    <div>
-      <!-- <pre>
-        {{images}}
-      </pre>-->
-    </div>
     <div class="photo-card" v-for="photo in images" :key="photo._id">
+      <button-group>
+        <!-- <el-checkbox v-model="checked"></el-checkbox> -->
+        <el-button
+          @click="markImageAsRevised(photo)"
+          :type="photo.revised ? 'success' : ''"
+          icon="el-icon-check"
+          circle
+        ></el-button>
+        <el-button
+          type="primary"
+          icon="el-icon-copy-document"
+          @click="copyImagesIdToClipboard(photo)"
+          circle
+        ></el-button>
+      </button-group>
       <div class="photo-item">
         <img class="photo" :src="`/photos/${photo._id}.jpg`" alt>
         <div class="img-menu">
           <p>id: {{photo._id}}</p>
-          <el-button-group>
-            <el-button
-              type="primary"
-              icon="el-icon-copy-document"
-              size="mini"
-              @click="copyImagesIdToClipboard(photo)"
-            ></el-button>
-          </el-button-group>
         </div>
       </div>
       <div class="similars">
@@ -139,6 +141,14 @@ export default {
     return { images: data }
   },
   methods: {
+    markImageAsRevised(image) {
+      if (image.revised) {
+        image.revised = false
+      } else {
+        image.revised = true
+      }
+      this.updateImageState(image)
+    },
     copyImagesIdToClipboard(img) {
       // console.log(img)
       let ids = []
@@ -253,7 +263,7 @@ export default {
   color: #eaeaea;
 }
 .photo-item {
-  margin: 20px;
+  margin-left: 20px;
   cursor: pointer;
 }
 .photo {
@@ -267,10 +277,18 @@ export default {
   display: flex;
   justify-content: space-between;
 }
-.el-button-group {
-  opacity: 0.3;
+
+.button-group {
+  text-align: center;
 }
-.el-button-group:hover {
+
+.el-button {
+  margin: 10px 0px !important;
+}
+.button-group:hover {
   opacity: 1;
+}
+.el-checkbox {
+  /* margin: 10 !important; */
 }
 </style>
