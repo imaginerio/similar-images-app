@@ -8,8 +8,17 @@
     <div class="photo-card" v-for="photo in images" :key="photo._id">
       <div class="photo-item">
         <img class="photo" :src="`/photos/${photo._id}.jpg`" alt>
-        <p>id: {{photo._id}}</p>
-        <p>{{photo.found}}</p>
+        <div class="img-menu">
+          <p>id: {{photo._id}}</p>
+          <el-button-group>
+            <el-button
+              type="primary"
+              icon="el-icon-copy-document"
+              size="mini"
+              @click="copyImagesIdToClipboard(photo)"
+            ></el-button>
+          </el-button-group>
+        </div>
       </div>
       <div class="similars">
         <div
@@ -24,7 +33,10 @@
             :src="`/photos/${similar.filename}.jpg`"
             alt
           >
-          <p>{{similar.filename}} Similarity: {{similar.similarity * 100}}%</p>
+          <div class="img-menu">
+            <p>{{similar.filename}}</p>
+            <p>Similarity: {{similar.similarity * 100}}%</p>
+          </div>
         </div>
       </div>
     </div>
@@ -127,6 +139,24 @@ export default {
     return { images: data }
   },
   methods: {
+    copyImagesIdToClipboard(img) {
+      // console.log(img)
+      let ids = []
+      const neighbors = _.filter(img.neighbors, { isSamePhoto: true })
+
+      ids.push(img._id)
+
+      neighbors.forEach(element => {
+        ids.push(element.filename)
+      })
+
+      console.log(ids)
+      navigator.clipboard.writeText(ids)
+      this.$message({
+        duration: 1500,
+        message: `Id(s) copiados para o clipboard.`
+      })
+    },
     async updateImageState(imageToUpdate) {
       const id = imageToUpdate._id
 
@@ -232,5 +262,15 @@ export default {
 
 .active {
   outline: 3px solid #49bd79;
+}
+.img-menu {
+  display: flex;
+  justify-content: space-between;
+}
+.el-button-group {
+  opacity: 0.3;
+}
+.el-button-group:hover {
+  opacity: 1;
 }
 </style>
