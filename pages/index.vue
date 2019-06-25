@@ -136,7 +136,7 @@ export default {
     console.log('parametros são:', route.query)
     const { similarity } = route.query
     const { data } = await axios.get(
-      `http://localhost:3000/api/?similarity=${similarity}`
+      `http://192.168.1.254:3333/api/?similarity=${similarity}`
     )
     return { images: data }
   },
@@ -161,7 +161,49 @@ export default {
       })
 
       console.log(ids)
-      navigator.clipboard.writeText(ids)
+
+      function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement('textarea')
+
+        textArea.style.position = 'fixed'
+        textArea.style.top = 0
+        textArea.style.left = 0
+
+        // Ensure it has a small width and height. Setting to 1px / 1em
+        // doesn't work as this gives a negative w/h on some browsers.
+        textArea.style.width = '2em'
+        textArea.style.height = '2em'
+
+        // We don't need padding, reducing the size if it does flash render.
+        textArea.style.padding = 0
+
+        // Clean up any borders.
+        textArea.style.border = 'none'
+        textArea.style.outline = 'none'
+        textArea.style.boxShadow = 'none'
+
+        // Avoid flash of white box if rendered for any reason.
+        textArea.style.background = 'transparent'
+
+        textArea.value = text
+
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+
+        try {
+          var successful = document.execCommand('copy')
+          var msg = successful ? 'successful' : 'unsuccessful'
+          console.log('Fallback: Copying text command was ' + msg)
+        } catch (err) {
+          console.error('Fallback: Oops, unable to copy', err)
+        }
+
+        document.body.removeChild(textArea)
+      }
+
+      fallbackCopyTextToClipboard(ids)
+
       this.$message({
         duration: 1500,
         message: `Id(s) copiados para o clipboard.`
@@ -178,13 +220,13 @@ export default {
       }
 
       const res = await axios.post(
-        `http://localhost:3000/api/${id}`,
+        `http://192.168.1.254:3333/api/${id}`,
         imageToUpdate
       )
 
       const similarity = 0.89
       const { data } = await axios.get(
-        `http://localhost:3000/api/?similarity=${similarity}?found=false`
+        `http://192.168.1.254:3333/api/?similarity=${similarity}?found=false`
       )
 
       this.images = data
@@ -218,7 +260,7 @@ export default {
         this.updateImageState(image)
       }
 
-      const res = await axios.get(`http://localhost:3000/api/${similarId}`)
+      const res = await axios.get(`http://192.168.1.254:3333/api/${similarId}`)
       const similarPhoto = res.data[0]
 
       const indexPhoto = _.findIndex(similarPhoto.neighbors, {
