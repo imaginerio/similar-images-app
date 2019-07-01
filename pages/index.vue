@@ -1,21 +1,34 @@
 <template>
   <div class="container">
     <div class="photo-card" v-for="photo in images" :key="photo._id">
-      <button-group>
-        <!-- <el-checkbox v-model="checked"></el-checkbox> -->
-        <el-button
-          @click="markImageAsRevised(photo)"
-          :type="photo.revised ? 'success' : ''"
-          icon="el-icon-check"
-          circle
-        ></el-button>
-        <el-button
-          type="primary"
-          icon="el-icon-copy-document"
-          @click="copyImagesIdToClipboard(photo)"
-          circle
-        ></el-button>
-      </button-group>
+      <div class="button-group">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          content="Marcar imagem como resolvida."
+          placement="right-start"
+        >
+          <el-button
+            @click="markImageAsRevised(photo)"
+            :type="photo.revised ? 'success' : ''"
+            icon="el-icon-check"
+            circle
+          ></el-button>
+        </el-tooltip>
+        <el-tooltip
+          class="item"
+          effect="dark"
+          content="Copiar id(s) para o clipboard."
+          placement="right-start"
+        >
+          <el-button
+            type="primary"
+            icon="el-icon-copy-document"
+            @click="copyImagesIdToClipboard(photo)"
+            circle
+          ></el-button>
+        </el-tooltip>
+      </div>
       <div class="photo-item">
         <img class="photo" :src="`/photos/${photo._id}.jpg`" alt>
         <div class="img-menu">
@@ -150,7 +163,6 @@ export default {
       this.updateImageState(image)
     },
     copyImagesIdToClipboard(img) {
-      // console.log(img)
       let ids = []
       const neighbors = _.filter(img.neighbors, { isSamePhoto: true })
 
@@ -159,8 +171,6 @@ export default {
       neighbors.forEach(element => {
         ids.push(element.filename)
       })
-
-      console.log(ids)
 
       function fallbackCopyTextToClipboard(text) {
         var textArea = document.createElement('textarea')
@@ -184,9 +194,9 @@ export default {
 
         // Avoid flash of white box if rendered for any reason.
         textArea.style.background = 'transparent'
-
-        textArea.value = text
-
+        const t = text.toString().replace(/,/g, ';')
+        textArea.value = t
+        console.log('texto é ', t)
         document.body.appendChild(textArea)
         textArea.focus()
         textArea.select()
@@ -212,19 +222,14 @@ export default {
     async updateImageState(imageToUpdate) {
       const id = imageToUpdate._id
 
-      // try to find item index
-      const imageIndex = _.findIndex(this.images, { _id: id })
-      // if index, it updates in data
-      if (imageIndex !== -1) {
-        this.images.splice(imageIndex, 1, imageToUpdate)
-      }
-
       const res = await axios.post(
         `http://192.168.1.254:3333/api/${id}`,
         imageToUpdate
       )
 
-      const similarity = 0.89
+      const similarity = this.$route.query.similarity
+        ? this.$route.query.similarity
+        : 0.89
       const { data } = await axios.get(
         `http://192.168.1.254:3333/api/?similarity=${similarity}?found=false`
       )
@@ -271,13 +276,6 @@ export default {
       markImageAsSame(photo, similarIndex)
       markImageAsSame(similarPhoto, indexPhoto)
       markImageAsfound(similarPhoto)
-
-      // Marc the similar item as found.
-
-      //  TODO:
-      //  Considerar marcar itens como 'founded' pq assim eles podem desaparecer da db.
-      //  considerar tbm não mostrar itens que tem algum item identico dentro dos neighbors, pq eles tbm podem desaparecer da busca
-      //  só é preciso marcar as relações de semelhança uma vez, depois disso eu posso apagar os itens repetidos.
 
       // console.log('procurando da foto:')
       // console.log(similarPhoto)

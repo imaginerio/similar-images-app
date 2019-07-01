@@ -13,7 +13,7 @@ app.get('/api', (req, res) => {
   if (req.query) {
     const { similarity, found } = req.query
 
-    const query = { $and: [{ found: false }, { "neighbors": { $elemMatch: { similarity: { $gt: parseFloat(similarity) } } } }] }
+    const query = { $and: [{ found: found ? found : true }, { "neighbors": { $elemMatch: { similarity: { $gt: parseFloat(similarity) } } } }] }
 
     db.find(query, (err, data) => {
       res.json(data)
