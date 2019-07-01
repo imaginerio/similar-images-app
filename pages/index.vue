@@ -2,7 +2,7 @@
   <div class="container">
     <div class="photo-card" v-for="photo in images" :key="photo._id">
       <div class="button-group">
-        <el-tooltip
+        <!-- <el-tooltip
           class="item"
           effect="dark"
           content="Marcar imagem como resolvida."
@@ -14,7 +14,7 @@
             icon="el-icon-check"
             circle
           ></el-button>
-        </el-tooltip>
+        </el-tooltip> -->
         <el-tooltip
           class="item"
           effect="dark"
