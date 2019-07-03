@@ -14,7 +14,7 @@
             icon="el-icon-check"
             circle
           ></el-button>
-        </el-tooltip> -->
+        </el-tooltip>-->
         <el-tooltip
           class="item"
           effect="dark"
@@ -30,7 +30,7 @@
         </el-tooltip>
       </div>
       <div class="photo-item">
-        <img class="photo" :src="`/photos/${photo._id}.jpg`" alt>
+        <img class="photo" :src="`/photos/${photo._id}.jpg`" alt />
         <div class="img-menu">
           <p>id: {{photo._id}}</p>
         </div>
@@ -47,7 +47,7 @@
             :class="{ active: similar.isSamePhoto }"
             :src="`/photos/${similar.filename}.jpg`"
             alt
-          >
+          />
           <div class="img-menu">
             <p>{{similar.filename}}</p>
             <p>Similarity: {{similar.similarity * 100}}%</p>
@@ -147,9 +147,9 @@ export default {
   },
   async asyncData({ route }) {
     console.log('parametros são:', route.query)
-    const { similarity } = route.query
+    const { similarity, found } = route.query
     const { data } = await axios.get(
-      `http://192.168.1.254:3333/api/?similarity=${similarity}`
+      `http://192.168.1.254:3333/api/?similarity=${similarity}&found=${found}`
     )
     return { images: data }
   },

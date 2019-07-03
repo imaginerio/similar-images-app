@@ -10,12 +10,13 @@ const db = new datastore('./database/database.db')
 db.loadDatabase()
 
 app.get('/api', (req, res) => {
-  if (req.query) {
+  if (req.query !== {}) {
     const { similarity, found } = req.query
 
-    const query = { $and: [{ found: found ? found : true }, { "neighbors": { $elemMatch: { similarity: { $gt: parseFloat(similarity) } } } }] }
-
+    const isFound = (found === 'true')
+    const query = { $and: [{ found: isFound }, { "neighbors": { $elemMatch: { similarity: { $gt: parseFloat(similarity) } } } }] }
     db.find(query, (err, data) => {
+
       res.json(data)
     })
   } else {
