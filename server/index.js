@@ -10,21 +10,25 @@ const db = new datastore('./database/database.db')
 db.loadDatabase()
 
 app.get('/api', (req, res) => {
-  if (req.query !== {}) {
-    const { similarity, found } = req.query
+  const { similarity, found, search } = req.query
+  let query = {}
 
+  if (search) {
+    let idsToSearch = search.split(';')
+    query = { "_id": { "$in": idsToSearch } }
+  } else if (similarity && found) {
     const isFound = (found === 'true')
-    const query = { $and: [{ found: isFound }, { "neighbors": { $elemMatch: { similarity: { $gt: parseFloat(similarity) } } } }] }
-    db.find(query, (err, data) => {
-
-      res.json(data)
-    })
-  } else {
-    db.find({}, (err, data) => {
-      res.json(data)
-    })
+    query = { $and: [{ found: isFound }, { "neighbors": { $elemMatch: { similarity: { $gt: parseFloat(similarity) } } } }] }
+  } else if (found) {
+    const isFound = (found === 'true')
+    query = { found: isFound }
+  } else if (similarity) {
+    query = { "neighbors": { $elemMatch: { similarity: { $gt: parseFloat(similarity) } } } }
   }
 
+  db.find(query, (err, data) => {
+    res.json(data)
+  })
 })
 
 app.get('/api/:id', (req, res) => {

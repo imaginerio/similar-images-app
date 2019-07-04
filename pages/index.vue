@@ -1,8 +1,22 @@
 <template>
-  <div class="container">
-    <div class="photo-card" v-for="photo in images" :key="photo._id">
-      <div class="button-group">
-        <!-- <el-tooltip
+  <div>
+    <el-header>
+      <div @click="forceNavigation('/?similarity=0.89&found=false')">
+        <img class="icons" src="/home.svg" alt />
+      </div>
+      <div class="search" v-on:keyup.enter="searchRecords">
+        <el-input
+          placeholder="Record Name para busca"
+          v-model="searchBox"
+          v-on:keyup.enter="searchRecords"
+          class="input-with-select"
+        ></el-input>
+      </div>
+    </el-header>
+    <div class="container">
+      <div class="photo-card" v-for="photo in images" :key="photo._id">
+        <div class="button-group">
+          <!-- <el-tooltip
           class="item"
           effect="dark"
           content="Marcar imagem como resolvida."
@@ -14,43 +28,44 @@
             icon="el-icon-check"
             circle
           ></el-button>
-        </el-tooltip>-->
-        <el-tooltip
-          class="item"
-          effect="dark"
-          content="Copiar id(s) para o clipboard."
-          placement="right-start"
-        >
-          <el-button
-            type="primary"
-            icon="el-icon-copy-document"
-            @click="copyImagesIdToClipboard(photo)"
-            circle
-          ></el-button>
-        </el-tooltip>
-      </div>
-      <div class="photo-item">
-        <img class="photo" :src="`/photos/${photo._id}.jpg`" alt />
-        <div class="img-menu">
-          <p>id: {{photo._id}}</p>
+          </el-tooltip>-->
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="Copiar id(s) para o clipboard."
+            placement="right-start"
+          >
+            <el-button
+              type="primary"
+              icon="el-icon-copy-document"
+              @click="copyImagesIdToClipboard(photo)"
+              circle
+            ></el-button>
+          </el-tooltip>
         </div>
-      </div>
-      <div class="similars">
-        <div
-          v-for="(similar, similarIndex) in photo.neighbors"
-          :key="similar.filename"
-          class="photo-item"
-        >
-          <img
-            class="photo"
-            @click="selectSimilar(photo, similarIndex, similar.filename )"
-            :class="{ active: similar.isSamePhoto }"
-            :src="`/photos/${similar.filename}.jpg`"
-            alt
-          />
+        <div class="photo-item">
+          <img class="photo" :src="`/photos/${photo._id}.jpg`" alt />
           <div class="img-menu">
-            <p>{{similar.filename}}</p>
-            <p>Similarity: {{similar.similarity * 100}}%</p>
+            <p>id: {{photo._id}}</p>
+          </div>
+        </div>
+        <div class="similars">
+          <div
+            v-for="(similar, similarIndex) in photo.neighbors"
+            :key="similar.filename"
+            class="photo-item"
+          >
+            <img
+              class="photo"
+              @click="selectSimilar(photo, similarIndex, similar.filename )"
+              :class="{ active: similar.isSamePhoto }"
+              :src="`/photos/${similar.filename}.jpg`"
+              alt
+            />
+            <div class="img-menu">
+              <p>{{similar.filename}}</p>
+              <p>Similarity: {{similar.similarity * 100}}%</p>
+            </div>
           </div>
         </div>
       </div>
@@ -69,91 +84,24 @@ export default {
   },
   data() {
     return {
-      _images: [
-        {
-          _id: '001AAN005147',
-          fileName: '001AAN005147.json',
-          neighbors: [
-            { filename: '001AAN005147', similarity: 1 },
-            { filename: '001AAN005149', similarity: 0.8897 },
-            { filename: '001AN01002020', similarity: 0.8167 },
-            { filename: '002080RJ0103', similarity: 0.8064 },
-            { filename: '0071824cx001-09', similarity: 0.7964 },
-            { filename: '001AN01002021', similarity: 0.7897 },
-            { filename: '002027BRRJ021', similarity: 0.788 },
-            { filename: '007SN-02', similarity: 0.7868 },
-            { filename: '002001MF003001', similarity: 0.7842 },
-            { filename: '002080RJ2202', similarity: 0.78 },
-            { filename: '001AN01002019', similarity: 0.7691 },
-            { filename: '001AN01001005', similarity: 0.7618 },
-            { filename: '007A6P3F03-045', similarity: 0.7589 },
-            { filename: '007ALA089', similarity: 0.7529 },
-            { filename: '007A5P4F05-038-039', similarity: 0.7515 },
-            { filename: '002080BR0215', similarity: 0.7506 },
-            { filename: '001ANV022024', similarity: 0.7461 },
-            { filename: '007A5P3F13-036', similarity: 0.7412 },
-            { filename: 'CJHF1007', similarity: 0.7399 },
-            { filename: '007A5P3F13-035', similarity: 0.735 },
-            { filename: 'CJHF3003', similarity: 0.7348 },
-            { filename: '0071824cx036a-09', similarity: 0.7347 },
-            { filename: '001ALA011008', similarity: 0.7345 },
-            { filename: '001AMF015002', similarity: 0.733 },
-            { filename: '007A5P4F05-070a072', similarity: 0.7317 },
-            { filename: '007A5P4F05-043', similarity: 0.7315 },
-            { filename: '0071824cx045-04', similarity: 0.7267 },
-            { filename: '001ALA011005', similarity: 0.7267 },
-            { filename: '001MF003001', similarity: 0.7181 },
-            { filename: '007A5P3F13-022', similarity: 0.7181 }
-          ]
-        },
-        {
-          _id: '001AAN005149',
-          fileName: '001AAN005149.json',
-          neighbors: [
-            { filename: '001AAN005149', similarity: 1 },
-            { filename: '001AAN005147', similarity: 0.8897 },
-            { filename: '0071824cx036a-09', similarity: 0.8487 },
-            { filename: '0071824cx001-09', similarity: 0.8454 },
-            { filename: '001AN01002019', similarity: 0.8417 },
-            { filename: '001AN01002021', similarity: 0.8312 },
-            { filename: '002080RJ2202', similarity: 0.8267 },
-            { filename: '007SN-02', similarity: 0.8265 },
-            { filename: '001AN01001005', similarity: 0.8251 },
-            { filename: '001AN01002020', similarity: 0.8226 },
-            { filename: '007A6P3F03-045', similarity: 0.8224 },
-            { filename: '007A5P4F05-038-039', similarity: 0.8172 },
-            { filename: '007A5P3F13-036', similarity: 0.8131 },
-            { filename: '007A5P4F05-070a072', similarity: 0.7944 },
-            { filename: '002080RJ0103', similarity: 0.7914 },
-            { filename: '007A5P4F05-043', similarity: 0.788 },
-            { filename: '001MF003001', similarity: 0.7822 },
-            { filename: 'P002SAm52-0054', similarity: 0.7801 },
-            { filename: '0071824cx017a-04', similarity: 0.7741 },
-            { filename: '001ALA011005', similarity: 0.772 },
-            { filename: '007A5P3F13-022', similarity: 0.7687 },
-            { filename: '0071824cx045-04', similarity: 0.7678 },
-            { filename: '007A6P4FP15-010', similarity: 0.7668 },
-            { filename: 'CJHF3003', similarity: 0.7653 },
-            { filename: '002080BR0215', similarity: 0.7643 },
-            { filename: '0071824cx036a-04', similarity: 0.7639 },
-            { filename: '001ANV022024', similarity: 0.7636 },
-            { filename: '0071824cx036a-02', similarity: 0.7606 },
-            { filename: '001MF008', similarity: 0.7601 },
-            { filename: 'CJHF1007', similarity: 0.7588 }
-          ]
-        }
-      ]
+      searchBox: '',
+      similarity: 89
     }
   },
   async asyncData({ route }) {
-    console.log('parametros são:', route.query)
-    const { similarity, found } = route.query
-    const { data } = await axios.get(
-      `http://192.168.1.254:3333/api/?similarity=${similarity}&found=${found}`
-    )
+    // console.log('parametros são:', route.query)
+    const { data } = await axios.get(`http://192.168.1.254:3333/api`, {
+      params: route.query
+    })
     return { images: data }
   },
   methods: {
+    forceNavigation(to) {
+      window.location.href = to
+    },
+    async searchRecords() {
+      window.location.href = `/?search=${this.searchBox}`
+    },
     markImageAsRevised(image) {
       if (image.revised) {
         image.revised = false
@@ -219,6 +167,8 @@ export default {
         message: `Id(s) copiados para o clipboard.`
       })
     },
+    // TODO:
+    // Atulizar essa funcão para receber parametros genéricos
     async updateImageState(imageToUpdate) {
       const id = imageToUpdate._id
 
@@ -227,12 +177,9 @@ export default {
         imageToUpdate
       )
 
-      const similarity = this.$route.query.similarity
-        ? this.$route.query.similarity
-        : 0.89
-      const { data } = await axios.get(
-        `http://192.168.1.254:3333/api/?similarity=${similarity}?found=false`
-      )
+      const { data } = await axios.get(`http://192.168.1.254:3333/api`, {
+        params: this.$route.query
+      })
 
       this.images = data
     },
@@ -287,7 +234,7 @@ export default {
 
 <style>
 .container {
-  margin: 0 auto;
+  margin: 60px auto;
   display: flex;
   flex-direction: column;
 }
@@ -330,5 +277,49 @@ export default {
 }
 .el-checkbox {
   /* margin: 10 !important; */
+}
+.el-header {
+  /* background-color: #b3c0d1; */
+  background-color: rgb(43, 42, 42);
+  color: #333;
+  line-height: 60px;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  display: flex;
+  padding-left: 83px;
+}
+.search {
+  width: 400px;
+  height: 20px;
+}
+.el-input__inner {
+  -webkit-appearance: none;
+  background-color: #272727;
+  background-image: none;
+  border-radius: 4px;
+  border: 1px solid #4b4b4d9c;
+  border-bottom: 1px solid #9293979c;
+  box-sizing: border-box;
+  color: #e9e9e9;
+  display: inline-block;
+  font-size: inherit;
+  height: 40px;
+  line-height: 40px;
+  outline: none;
+  padding: 0 15px;
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  width: 100%;
+}
+.el-input__inner:hover {
+  border: 1px solid #4b4b4d9c;
+  border-bottom: 1px solid #9293979c;
+}
+.icons {
+  color: blanchedalmond;
+  height: 32px;
+  margin: 14px;
+  fill: currentColor;
+  cursor: pointer;
 }
 </style>
