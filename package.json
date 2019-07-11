@@ -18,7 +18,8 @@
     "express": "^4.16.4",
     "lodash": "^4.17.11",
     "nedb": "^1.8.0",
-    "nuxt": "^2.0.0"
+    "nuxt": "^2.0.0",
+    "vue-infinite-loading": "^2.4.4"
   },
   "devDependencies": {
     "eslint-config-prettier": "^4.1.0",

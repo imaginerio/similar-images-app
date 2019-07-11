@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-header>
-      <div @click="forceNavigation('/?similarity=0.89&found=false')">
+      <div @click="forceNavigation('/?similarity=0.89')">
         <img class="icons" src="/home.svg" alt />
       </div>
       <div class="search" v-on:keyup.enter="searchRecords">
@@ -14,21 +14,27 @@
       </div>
     </el-header>
     <div class="container">
-      <div class="photo-card" v-for="photo in images" :key="photo._id">
+      <div
+        class="photo-card"
+        v-for="photo in images"
+        :key="photo._id"
+        :id="photo._id"
+        v-show="showFoundImage(photo)"
+      >
         <div class="button-group">
-          <!-- <el-tooltip
-          class="item"
-          effect="dark"
-          content="Marcar imagem como resolvida."
-          placement="right-start"
-        >
-          <el-button
-            @click="markImageAsRevised(photo)"
-            :type="photo.revised ? 'success' : ''"
-            icon="el-icon-check"
-            circle
-          ></el-button>
-          </el-tooltip>-->
+          <el-tooltip
+            class="item"
+            effect="dark"
+            content="Marcar imagem como resolvida."
+            placement="right-start"
+          >
+            <el-button
+              @click="markImageAsRevised(photo)"
+              :type="photo.revised ? 'success' : ''"
+              icon="el-icon-check"
+              circle
+            ></el-button>
+          </el-tooltip>
           <el-tooltip
             class="item"
             effect="dark"
@@ -69,6 +75,7 @@
           </div>
         </div>
       </div>
+      <infinite-loading @infinite="infiniteHandler"></infinite-loading>
     </div>
   </div>
 </template>
@@ -77,25 +84,59 @@
 import Logo from '~/components/Logo.vue'
 import axios from 'axios'
 import _ from 'lodash'
+// import InfiniteLoading from 'vue-infinite-loading'
 
+const api = 'http://192.168.1.254:3333/api/'
 export default {
   components: {
+    // InfiniteLoading,
     Logo
   },
   data() {
     return {
+      loading: false,
+      page: 1,
       searchBox: '',
       similarity: 89
     }
   },
   async asyncData({ route }) {
-    // console.log('parametros são:', route.query)
-    const { data } = await axios.get(`http://192.168.1.254:3333/api`, {
+    const { data } = await axios.get(api, {
       params: route.query
     })
     return { images: data }
   },
   methods: {
+    //TODO:
+    // Substituir essa lógica para usar 'found' ao invés de considerar o search
+    showFoundImage(img) {
+      const { search } = this.$route.query
+      if (search) {
+        return true
+      } else {
+        return !img.found
+      }
+    },
+    infiniteHandler($state) {
+      this.loading = true
+      const query = { ...this.$route.query, page: this.page + 1 }
+      axios
+        .get(api, {
+          params: query
+        })
+        .then(({ data }) => {
+          if (data.length) {
+            this.loading = false
+            this.$router.push({ path: '/', query: query })
+            this.page += 1
+            this.images.push(...data)
+            $state.loaded()
+          } else {
+            this.loading = false
+            $state.complete()
+          }
+        })
+    },
     forceNavigation(to) {
       window.location.href = to
     },
@@ -167,17 +208,13 @@ export default {
         message: `Id(s) copiados para o clipboard.`
       })
     },
-    // TODO:
-    // Atulizar essa funcão para receber parametros genéricos
+
     async updateImageState(imageToUpdate) {
       const id = imageToUpdate._id
 
-      const res = await axios.post(
-        `http://192.168.1.254:3333/api/${id}`,
-        imageToUpdate
-      )
+      const res = await axios.post(api + id, imageToUpdate)
 
-      const { data } = await axios.get(`http://192.168.1.254:3333/api`, {
+      const { data } = await axios.get(api, {
         params: this.$route.query
       })
 
@@ -228,6 +265,11 @@ export default {
       // console.log(similarPhoto)
       // console.log('o index da foto mãe:', photo._id, 'que é:', indexPhoto)
     }
+  },
+  created() {
+    const { page } = this.$route.query
+    page ? (this.page = parseFloat(page)) : (this.page = 1)
+    // console.log(this.$route.query)
   }
 }
 </script>
@@ -321,5 +363,9 @@ export default {
   margin: 14px;
   fill: currentColor;
   cursor: pointer;
+}
+.loadMoreItensBtn {
+  width: 300px;
+  align-self: center;
 }
 </style>

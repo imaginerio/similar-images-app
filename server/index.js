@@ -10,8 +10,11 @@ const db = new datastore('./database/database.db')
 db.loadDatabase()
 
 app.get('/api', (req, res) => {
-  const { similarity, found, search } = req.query
+  const { similarity, found, search, page } = req.query
   let query = {}
+
+  const itensPerPage = 100
+  let skip = (parseFloat(page) * itensPerPage) - itensPerPage
 
   if (search) {
     let idsToSearch = search.split(';')
@@ -26,7 +29,8 @@ app.get('/api', (req, res) => {
     query = { "neighbors": { $elemMatch: { similarity: { $gt: parseFloat(similarity) } } } }
   }
 
-  db.find(query, (err, data) => {
+  console.log(page, skip)
+  db.find(query).skip(skip).limit(100).exec((err, data) => {
     res.json(data)
   })
 })
