@@ -84,12 +84,10 @@
 import Logo from '~/components/Logo.vue'
 import axios from 'axios'
 import _ from 'lodash'
-// import InfiniteLoading from 'vue-infinite-loading'
 
 const api = 'http://192.168.1.254:3333/api/'
 export default {
   components: {
-    // InfiniteLoading,
     Logo
   },
   data() {
@@ -114,7 +112,7 @@ export default {
       if (search) {
         return true
       } else {
-        return !img.found
+        return !img.found || img.revised
       }
     },
     infiniteHandler($state) {
