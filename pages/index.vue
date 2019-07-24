@@ -19,7 +19,7 @@
         v-for="photo in images"
         :key="photo._id"
         :id="photo._id"
-        v-show="showFoundImage(photo)"
+        v-show="showFoundImage(photo) && !photo.revised"
       >
         <div class="button-group">
           <el-tooltip
